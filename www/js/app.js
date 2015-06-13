@@ -45,7 +45,7 @@ app.controller('AcquireController', function($scope,$cordovaBarcodeScanner, $sta
       $cordovaBarcodeScanner.scan().then(function(barcodeData){
         markerObject.json = JSON.stringify(barcodeData);
         markerObject.md5 = md5(barcodeData.text);
-        // Request coordinates to the server if markup already registered
+        // TODO Request coordinates to the server if markup already registered
         $state.go('map');
       },function(error){
         console.log(error);
@@ -59,11 +59,12 @@ app.controller('AcquireController', function($scope,$cordovaBarcodeScanner, $sta
   };
 });
 
-app.controller('MapController', function($scope,$cordovaGeolocation){
+app.controller('MapController', function($scope,$cordovaGeolocation, leafletData){
     var posOptions = {timeout: 10000, enableHighAccuracy: false};
     $cordovaGeolocation
       .getCurrentPosition(posOptions)
       .then(function (position) {
+        // Place the center based on geolocation
         angular.extend($scope,{
           center: {
             lat: position.coords.latitude,
@@ -71,21 +72,24 @@ app.controller('MapController', function($scope,$cordovaGeolocation){
             zoom: 17
           }
         });
-        angular.extend($scope, {
-          paths: {
-            c1: {
-              weight: 2,
-              color: '#ff612f',
-              latlngs: $scope.center,
-              radius: position.coords.accuracy,
-              type: 'circle'
-            }
-          }
+        // Place a circle to highlight the accuracy
+        leafletData.getMap().then(function(map){
+          var accuracyCircle = L.circle($scope.center, position.coords.accuracy).addTo(map);
+          accuracyCircle.on('click',function(e){
+            var markerPosition = L.marker(e.latlng).addTo(map);
+            markerPosition.bindPopup('Is this the correct position?').openPopup();
+          });
+        })
+        
+        // Bind the click on the map
+        $scope.$on('leafletDirectiveMap.click', function(event){
+          console.log('map click');
         });
+        
       }, function(err) {
         console.log(err.message);
       });
-      
+    
     angular.extend($scope, {
       defaults: {
         scrollWheelZoom:false
@@ -95,6 +99,12 @@ app.controller('MapController', function($scope,$cordovaGeolocation){
         lng: -3.823,
         zoom: 4
       },
-      paths: {}
+      paths: {},
+      events: {
+        map: {
+          enable: ['click'],
+          logic: 'emit'
+        }
+      }
     });
   });
