@@ -1,8 +1,3 @@
-// Ionic Starter App
-
-// angular.module is a global place for creating, registering and retrieving Angular modules
-// 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
-// the 2nd parameter is an array of 'requires'
 var app = angular.module('starter', ['ionic','ngCordova','leaflet-directive'])
 
 .run(function($ionicPlatform) {
@@ -59,7 +54,7 @@ app.controller('AcquireController', function($scope,$cordovaBarcodeScanner, $sta
   };
 });
 
-app.controller('MapController', function($scope,$cordovaGeolocation, leafletData){
+app.controller('MapController', function($scope, $compile, $cordovaGeolocation, leafletData){
     var posOptions = {timeout: 10000, enableHighAccuracy: false};
     $cordovaGeolocation
       .getCurrentPosition(posOptions)
@@ -72,20 +67,20 @@ app.controller('MapController', function($scope,$cordovaGeolocation, leafletData
             zoom: 17
           }
         });
+
         // Place a circle to highlight the accuracy
         leafletData.getMap().then(function(map){
           var accuracyCircle = L.circle($scope.center, position.coords.accuracy).addTo(map);
           accuracyCircle.on('click',function(e){
             var markerPosition = L.marker(e.latlng).addTo(map);
-            markerPosition.bindPopup('Is this the correct position?').openPopup();
+            markerPosition.bindPopup('Is this the QRcode position? <button ng-click="confirmLocation()">yes</button><button>no</button>').openPopup();
           });
-        })
+        });
         
         // Bind the click on the map
         $scope.$on('leafletDirectiveMap.click', function(event){
           console.log('map click');
         });
-        
       }, function(err) {
         console.log(err.message);
       });
@@ -100,6 +95,7 @@ app.controller('MapController', function($scope,$cordovaGeolocation, leafletData
         zoom: 4
       },
       paths: {},
+      markers: {},
       events: {
         map: {
           enable: ['click'],
