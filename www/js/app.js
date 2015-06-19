@@ -1,6 +1,6 @@
-var app = angular.module('starter', ['ionic','ngCordova','leaflet-directive'])
+var app = angular.module('reticoloQR', ['ionic','ngCordova','leaflet-directive']);
 
-.run(function($ionicPlatform) {
+app.run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -14,7 +14,7 @@ var app = angular.module('starter', ['ionic','ngCordova','leaflet-directive'])
 })
 
 app.config(['$stateProvider','$urlRouterProvider',function($stateProvider, $urlRouterProvider) {
-  $urlRouterProvider.otherwise('/map');
+  $urlRouterProvider.otherwise('/');
 
   $stateProvider
     .state('home', {
@@ -24,83 +24,33 @@ app.config(['$stateProvider','$urlRouterProvider',function($stateProvider, $urlR
     .state('acquire', {
       url: '/acquire',
       templateUrl: 'templates/acquire.html',
-      controller: 'AcquireController'
+      controller: 'AcquireCtrl'
     })
     .state('map', {
       url: '/map',
       templateUrl: 'templates/map.html',
-      controller: 'MapController'
+      controller: 'MapCtrl'
     });
 }]);
 
-var markerObject = {};
-app.controller('AcquireController', function($scope,$cordovaBarcodeScanner, $state){
-  $scope.scanBarcode = function(){
-    try {
-      $cordovaBarcodeScanner.scan().then(function(barcodeData){
-        markerObject.json = JSON.stringify(barcodeData);
-        markerObject.md5 = md5(barcodeData.text);
-        // TODO Request coordinates to the server if markup already registered
-        $state.go('map');
-      },function(error){
-        console.log(error);
-      });
-    }
-    catch (e) {
-      console.log(e);
-      markerObject.json = '{text:"test"}';
-      $state.go('map');
+app.service('markerObject', function(){
+  var properties = {
+    json: '',
+    md5: ''
+  };
+
+  return {
+    getJson(){
+      return properties.json;
+    },
+    setJson(json){
+      properties.json = json;
+    },
+    getMd5(){
+      return properties.md5;
+    },
+    setMd5(md5){
+      properties.md5 = md5;
     }
   };
 });
-
-app.controller('MapController', function($scope, $compile, $cordovaGeolocation, leafletData){
-    var posOptions = {timeout: 10000, enableHighAccuracy: false};
-    $cordovaGeolocation
-      .getCurrentPosition(posOptions)
-      .then(function (position) {
-        // Place the center based on geolocation
-        angular.extend($scope,{
-          center: {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-            zoom: 17
-          }
-        });
-
-        // Place a circle to highlight the accuracy
-        leafletData.getMap().then(function(map){
-          var accuracyCircle = L.circle($scope.center, position.coords.accuracy).addTo(map);
-          accuracyCircle.on('click',function(e){
-            var markerPosition = L.marker(e.latlng).addTo(map);
-            markerPosition.bindPopup('Is this the QRcode position? <button ng-click="confirmLocation()">yes</button><button>no</button>').openPopup();
-          });
-        });
-        
-        // Bind the click on the map
-        $scope.$on('leafletDirectiveMap.click', function(event){
-          console.log('map click');
-        });
-      }, function(err) {
-        console.log(err.message);
-      });
-    
-    angular.extend($scope, {
-      defaults: {
-        scrollWheelZoom:false
-      },
-      center: {
-        lat: 40.095,
-        lng: -3.823,
-        zoom: 4
-      },
-      paths: {},
-      markers: {},
-      events: {
-        map: {
-          enable: ['click'],
-          logic: 'emit'
-        }
-      }
-    });
-  });
