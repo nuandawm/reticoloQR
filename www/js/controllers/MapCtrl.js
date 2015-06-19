@@ -54,14 +54,14 @@ app.controller('MapCtrl', ['$scope','$compile','$cordovaGeolocation','leafletDat
     if ($scope.mapEventListener)
       $scope.mapEventListener();
     var mapEventListener = $scope.$on('leafletDirectiveMap.click', function(event,args){
-      console.log(args);
+      //console.log(args);
     });
 
     // Bind the click on a path (don't know why the controller is called twice)
     if ($scope.pathEventListener)
       $scope.pathEventListener();
     var pathEventListener = $scope.$on('leafletDirectivePath.click', function(event,args){
-      console.log(args);
+      //console.log(args);
       $scope.markers.QRmarker = {
         lat: args.leafletEvent.latlng.lat,
         lng: args.leafletEvent.latlng.lng,

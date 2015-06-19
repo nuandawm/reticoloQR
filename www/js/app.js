@@ -54,3 +54,9 @@ app.service('markerObject', function(){
     }
   };
 });
+
+app.service('md5', function(){
+  return {
+    md5: md5
+  };
+});
