@@ -1,7 +1,7 @@
 var app = angular.module('reticoloQR');
 
-app.controller('AcquireCtrl', ['$scope','$cordovaBarcodeScanner','$state','markerObject',
-	function($scope,$cordovaBarcodeScanner,$state,markerObject){
+app.controller('AcquireCtrl', ['$scope','$cordovaBarcodeScanner','$state','markerObject','md5',
+	function($scope,$cordovaBarcodeScanner,$state,markerObject,md5){
 	  $scope.scanBarcode = function(){
 	    try {
 	      $cordovaBarcodeScanner.scan().then(function(barcodeData){
